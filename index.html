@@ -1,23 +1,24 @@
-```html
+```html id="tt6m8w"
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>The Chameleon</title>
 
 <style>
+
 *{
     box-sizing:border-box;
 }
 
 body{
     margin:0;
-    font-family:Arial,sans-serif;
+    padding:16px;
     background:#111827;
     color:white;
-    padding:16px;
+    font-family:Arial,sans-serif;
 }
 
 .container{
@@ -32,14 +33,9 @@ h1{
 
 .card{
     background:#1f2937;
-    border-radius:18px;
     padding:18px;
+    border-radius:18px;
     margin-bottom:16px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
-}
-
-h2{
-    margin-top:0;
 }
 
 input{
@@ -48,20 +44,18 @@ input{
     border:none;
     border-radius:12px;
     font-size:16px;
-    margin-top:10px;
 }
 
 button{
     width:100%;
+    padding:14px;
     border:none;
     border-radius:12px;
-    padding:14px;
-    margin-top:12px;
     background:#10b981;
     color:white;
     font-size:16px;
+    margin-top:12px;
     cursor:pointer;
-    transition:0.2s;
 }
 
 button:hover{
@@ -72,27 +66,13 @@ button:hover{
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-    margin-top:10px;
+    margin-top:12px;
 }
 
 .player{
     background:#374151;
     padding:8px 14px;
     border-radius:999px;
-    font-size:14px;
-}
-
-.role{
-    text-align:center;
-    font-size:28px;
-    margin-bottom:16px;
-    font-weight:bold;
-}
-
-.small{
-    opacity:0.7;
-    font-size:13px;
-    margin-top:6px;
 }
 
 .grid{
@@ -106,14 +86,13 @@ button:hover{
     border-radius:14px;
     padding:16px;
     text-align:center;
-    cursor:pointer;
-    user-select:none;
-    transition:0.2s;
     min-height:90px;
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:15px;
+    cursor:pointer;
+    user-select:none;
+    transition:0.2s;
 }
 
 .cell:hover{
@@ -129,6 +108,31 @@ button:hover{
     opacity:0.45;
 }
 
+.role{
+    text-align:center;
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:16px;
+}
+
+.hidden{
+    display:none;
+}
+
+.small{
+    opacity:0.7;
+    font-size:13px;
+}
+
+.host{
+    background:#f59e0b;
+    color:black;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:bold;
+}
+
 .topbar{
     display:flex;
     justify-content:space-between;
@@ -137,27 +141,10 @@ button:hover{
     flex-wrap:wrap;
 }
 
-.badge{
-    background:#374151;
-    padding:8px 12px;
-    border-radius:999px;
-    font-size:14px;
-}
-
-.host{
-    background:#f59e0b;
-    color:black;
-    font-weight:bold;
-}
-
-.hidden{
-    display:none;
-}
-
 .footer{
     text-align:center;
-    opacity:0.6;
-    margin-top:18px;
+    opacity:0.5;
+    margin-top:20px;
     font-size:13px;
 }
 
@@ -176,6 +163,7 @@ button:hover{
         font-size:22px;
     }
 }
+
 </style>
 </head>
 
@@ -189,9 +177,14 @@ button:hover{
 
     <h2>Join Game</h2>
 
-    <input id="nameInput" placeholder="Enter your name"/>
+    <input
+        id="nameInput"
+        placeholder="Enter your name"
+    >
 
-    <button onclick="joinGame()">Join Room</button>
+    <button onclick="joinGame()">
+        Join Room
+    </button>
 
 </div>
 
@@ -201,19 +194,22 @@ button:hover{
 
         <div class="topbar">
 
-            <div class="badge">
+            <div>
                 Room:
-                <span id="roomCode"></span>
+                <b id="roomCode"></b>
             </div>
 
-            <div id="hostBadge" class="badge host hidden">
+            <div
+                id="hostBadge"
+                class="host hidden"
+            >
                 HOST
             </div>
 
         </div>
 
         <div class="small">
-            Share this URL with your friends
+            Share this URL with friends
         </div>
 
     </div>
@@ -222,9 +218,15 @@ button:hover{
 
         <h2>Players</h2>
 
-        <div id="players" class="players"></div>
+        <div
+            id="players"
+            class="players"
+        ></div>
 
-        <button id="startBtn" onclick="startGame()">
+        <button
+            id="startBtn"
+            onclick="startGame()"
+        >
             Start Game
         </button>
 
@@ -236,27 +238,37 @@ button:hover{
 
     <div class="card">
 
-        <div id="roleText" class="role">
+        <div
+            id="roleText"
+            class="role"
+        >
             Waiting for game...
         </div>
 
-        <h2>Bảng Kế Hoạch Tương Lai</h2>
+        <h2>
+            Bảng Kế Hoạch Tương Lai
+        </h2>
 
-        <div id="grid" class="grid"></div>
+        <div
+            id="grid"
+            class="grid"
+        ></div>
 
     </div>
 
 </div>
 
 <div class="footer">
-    Multiplayer realtime via Firebase
+Realtime multiplayer with Firebase
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp }
+import {
+    initializeApp
+}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -269,21 +281,37 @@ import {
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  databaseURL: "YOUR_DATABASE_URL",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+
+  apiKey: "AIzaSyBMM3os1jRLbzF9KUNkene328XgSmr8pKg",
+
+  authDomain: "chamm-f7898.firebaseapp.com",
+
+  databaseURL:
+  "PASTE_YOUR_DATABASE_URL_HERE",
+
+  projectId: "chamm-f7898",
+
+  storageBucket:
+  "chamm-f7898.firebasestorage.app",
+
+  messagingSenderId:
+  "936197801014",
+
+  appId:
+  "1:936197801014:web:a011ce668aadfd43734497",
+
+  measurementId:
+  "G-TW57FJC4NZ"
 };
 
-const app = initializeApp(firebaseConfig);
+const app =
+    initializeApp(firebaseConfig);
 
-const db = getDatabase(app);
+const db =
+    getDatabase(app);
 
 const keywords = [
+
 "Du học nước ngoài",
 "Lập gia đình",
 "Mua nhà riêng",
@@ -303,11 +331,13 @@ const keywords = [
 "Học ngôn ngữ mới",
 "Nghỉ hưu sớm",
 "Mở quán cà phê / Nhà hàng"
+
 ];
 
-const urlParams = new URLSearchParams(window.location.search);
+const params =
+    new URLSearchParams(location.search);
 
-let room = urlParams.get("room");
+let room = params.get("room");
 
 if(!room){
 
@@ -315,8 +345,8 @@ if(!room){
         .toString(36)
         .substring(2,8);
 
-    window.location.href =
-        window.location.pathname +
+    location.href =
+        location.pathname +
         "?room=" +
         room;
 }
@@ -324,7 +354,8 @@ if(!room){
 document.getElementById("roomCode")
 .innerText = room;
 
-const roomRef = ref(db, "rooms/" + room);
+const roomRef =
+    ref(db, "rooms/" + room);
 
 let playerId =
     localStorage.getItem("playerId");
@@ -340,24 +371,26 @@ if(!playerId){
 }
 
 let playerName =
-    localStorage.getItem("playerName") || "";
+    localStorage.getItem("playerName")
+    || "";
 
 if(playerName){
 
-    document.getElementById("nameInput")
-    .value = playerName;
+    document.getElementById(
+        "nameInput"
+    ).value = playerName;
 }
 
 async function joinGame(){
 
-    const input =
-        document.getElementById("nameInput");
-
-    const name = input.value.trim();
+    const name =
+        document.getElementById(
+            "nameInput"
+        ).value.trim();
 
     if(!name){
 
-        alert("Please enter your name");
+        alert("Enter your name");
 
         return;
     }
@@ -366,24 +399,25 @@ async function joinGame(){
 
     localStorage.setItem(
         "playerName",
-        playerName
+        name
     );
 
-    const snapshot = await get(roomRef);
+    const snapshot =
+        await get(roomRef);
 
-    const roomData = snapshot.val();
+    const data = snapshot.val();
 
     let isHost = false;
 
-    if(!roomData || !roomData.host){
+    if(!data || !data.host){
 
         isHost = true;
     }
 
-    await update(roomRef, {
+    await update(roomRef,{
 
         ["players/" + playerId]: {
-            name: playerName
+            name
         },
 
         ...(isHost && {
@@ -391,20 +425,24 @@ async function joinGame(){
         })
     });
 
-    document.getElementById("loginCard")
-    .classList.add("hidden");
+    document.getElementById(
+        "loginCard"
+    ).classList.add("hidden");
 
-    document.getElementById("gameUI")
-    .classList.remove("hidden");
+    document.getElementById(
+        "gameUI"
+    ).classList.remove("hidden");
 }
 
 window.joinGame = joinGame;
 
 async function startGame(){
 
-    const snapshot = await get(roomRef);
+    const snapshot =
+        await get(roomRef);
 
-    const data = snapshot.val();
+    const data =
+        snapshot.val();
 
     if(!data?.players){
 
@@ -416,7 +454,9 @@ async function startGame(){
 
     if(ids.length < 3){
 
-        alert("Need at least 3 players");
+        alert(
+            "Need at least 3 players"
+        );
 
         return;
     }
@@ -441,17 +481,17 @@ async function startGame(){
             : "normal";
     });
 
-    await update(roomRef, {
+    await update(roomRef,{
 
-        started: true,
+        started:true,
 
-        keyword: chosenKeyword,
+        keyword:chosenKeyword,
 
-        chameleon: chosenPlayer,
+        chameleon:chosenPlayer,
 
-        roles: roles,
+        roles:roles,
 
-        striked: {}
+        striked:{}
     });
 }
 
@@ -459,17 +499,17 @@ window.startGame = startGame;
 
 async function resetGame(){
 
-    await update(roomRef, {
+    await update(roomRef,{
 
-        started: false,
+        started:false,
 
-        keyword: null,
+        keyword:null,
 
-        chameleon: null,
+        chameleon:null,
 
-        roles: null,
+        roles:null,
 
-        striked: {}
+        striked:{}
     });
 }
 
@@ -494,7 +534,8 @@ function renderGrid(data){
         if(
             data.started &&
             data.keyword === word &&
-            data.roles?.[playerId] !== "chameleon"
+            data.roles?.[playerId]
+            !== "chameleon"
         ){
 
             div.classList.add("green");
@@ -510,7 +551,7 @@ function renderGrid(data){
             const current =
                 data.striked?.[word];
 
-            await update(roomRef, {
+            await update(roomRef,{
 
                 ["striked/" + word]:
                     !current
@@ -523,7 +564,8 @@ function renderGrid(data){
 
 onValue(roomRef, snapshot => {
 
-    const data = snapshot.val() || {};
+    const data =
+        snapshot.val() || {};
 
     const playersDiv =
         document.getElementById("players");
@@ -540,7 +582,8 @@ onValue(roomRef, snapshot => {
 
             div.className = "player";
 
-            div.innerText = player.name;
+            div.innerText =
+                player.name;
 
             if(id === data.host){
 
@@ -555,35 +598,39 @@ onValue(roomRef, snapshot => {
         data.host === playerId;
 
     const hostBadge =
-        document.getElementById("hostBadge");
+        document.getElementById(
+            "hostBadge"
+        );
 
     if(isHost){
 
-        hostBadge.classList.remove("hidden");
+        hostBadge.classList
+        .remove("hidden");
 
     }else{
 
-        hostBadge.classList.add("hidden");
+        hostBadge.classList
+        .add("hidden");
     }
 
-    const startBtn =
-        document.getElementById("startBtn");
-
-    startBtn.style.display =
+    document.getElementById(
+        "startBtn"
+    ).style.display =
         isHost
         ? "block"
         : "none";
 
     const roleText =
-        document.getElementById("roleText");
+        document.getElementById(
+            "roleText"
+        );
 
     if(!data.started){
 
         roleText.innerHTML =
             "Waiting for game...";
-    }
 
-    else{
+    }else{
 
         if(
             data.roles?.[playerId]
