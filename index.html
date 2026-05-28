@@ -14,7 +14,7 @@
     .green { background-color: #90EE90 !important; font-weight: bold; }
     .strikethrough { text-decoration: line-through; color: #555; }
     .room-code { font-size: 28px; font-weight: bold; color: #d32f2f; }
-    button { padding: 12px 20px; margin: 8px; font-size: 16px; border-radius: 8px; }
+    button { padding: 12px 24px; margin: 8px; font-size: 16px; border-radius: 8px; cursor: pointer; }
     .player-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
     .player { background: white; padding: 8px 16px; border-radius: 20px; border: 2px solid #4caf50; }
   </style>
@@ -36,9 +36,13 @@
     <div id="game" style="display:none;">
       <p>Mã phòng: <span class="room-code" id="displayCode"></span></p>
       <div class="player-list" id="playerList"></div>
-      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white;">🚀 BẮT ĐẦU GAME</button>
-      <div id="roleInfo" style="margin:25px; font-size:22px; font-weight:bold;"></div>
+      
+      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white; font-size:18px;">🚀 BẮT ĐẦU GAME</button>
+
+      <div id="roleInfo" style="margin:25px; font-size:22px; font-weight:bold; min-height:60px;"></div>
+      
       <table id="board"></table>
+
       <div style="margin-top:20px;">
         <button onclick="endRound()" style="background:#f44336; color:white;">Kết thúc Round</button>
         <button onclick="leaveRoom()">Rời phòng</button>
@@ -47,7 +51,6 @@
   </div>
 
   <script>
-    // ================== FIREBASE CONFIG MỚI ==================
     const firebaseConfig = {
       apiKey: "AIzaSyBMM3os1jRLbzF9KUNkene328XgSmr8pKg",
       authDomain: "chamm-f7898.firebaseapp.com",
@@ -74,10 +77,10 @@
     function createRoom() {
       myName = document.getElementById("nickname").value.trim();
       if (!myName) return alert("Vui lòng nhập tên!");
+      
       currentRoom = Math.random().toString(36).substring(2, 8).toUpperCase();
-      enterGame();
       isHost = true;
-      document.getElementById("startBtn").style.display = "inline-block";
+      enterGame();
       initRoom();
     }
 
@@ -85,6 +88,7 @@
       myName = document.getElementById("nickname").value.trim();
       const code = document.getElementById("roomCode").value.trim().toUpperCase();
       if (!myName || !code) return alert("Nhập đủ tên và mã phòng!");
+      
       currentRoom = code;
       enterGame();
       initRoom();
@@ -94,6 +98,7 @@
       document.getElementById("lobby").style.display = "none";
       document.getElementById("game").style.display = "block";
       document.getElementById("displayCode").textContent = currentRoom;
+      if (isHost) document.getElementById("startBtn").style.display = "inline-block";
     }
 
     function initRoom() {
@@ -103,6 +108,7 @@
       roomRef.on("value", (snapshot) => {
         const data = snapshot.val() || {};
         updatePlayerList(data.players || {});
+        
         if (data.gameState === "playing" && data.keyword) {
           renderBoard(data.keyword, data.chameleon === myName, data.striked || {});
         }
@@ -122,13 +128,29 @@
 
     function startGame() {
       if (!isHost) return alert("Chỉ người tạo phòng mới được bắt đầu!");
+      
       const roomRef = db.ref("rooms/" + currentRoom);
-      roomRef.once("value").then(s => {
-        const players = Object.keys(s.val()?.players || {});
+      roomRef.once("value").then(snapshot => {
+        const data = snapshot.val() || {};
+        const players = Object.keys(data.players || {});
+        
         if (players.length < 3) return alert("Cần ít nhất 3 người chơi để bắt đầu!");
-        const chameleon = players[Math.floor(Math.random()*players.length)];
-        const keyword = boardWords.flat()[Math.floor(Math.random()*16)];
-        roomRef.update({ gameState: "playing", chameleon, keyword, striked: {} });
+
+        const chameleon = players[Math.floor(Math.random() * players.length)];
+        const flatWords = boardWords.flat();
+        const keyword = flatWords[Math.floor(Math.random() * flatWords.length)];
+
+        roomRef.update({
+          gameState: "playing",
+          chameleon: chameleon,
+          keyword: keyword,
+          striked: {}
+        }).then(() => {
+          console.log("Game started successfully!");
+        });
+      }).catch(err => {
+        console.error(err);
+        alert("Có lỗi khi bắt đầu game: " + err.message);
       });
     }
 
@@ -144,7 +166,7 @@
           let cls = "";
           if (!isChameleon && isTarget) cls = "green";
           if (isStriked) cls += " strikethrough";
-          html += `<td class="${cls}" onclick="toggleStrike('${word}')">${word}</td>`;
+          html += `<td class="${cls}" onclick="toggleStrike('${word.replace(/'/g, "\\'")}')">${word}</td>`;
         }
         html += "</tr>";
       }
@@ -160,7 +182,7 @@
     }
 
     function endRound() { 
-      alert("Round kết thúc! Host bấm nút 'BẮT ĐẦU GAME' để chơi round mới."); 
+      alert("Round kết thúc! Host bấm nút BẮT ĐẦU GAME để chơi round mới."); 
     }
     function leaveRoom() { 
       if(confirm("Rời phòng?")) location.reload(); 
