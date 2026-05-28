@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Chameleon - Kế Hoạch Tương Lai</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f8f0; margin: 0; padding: 10px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    table { margin: 20px auto; border-collapse: collapse; }
+    td { width: 180px; height: 85px; border: 2px solid #333; padding: 8px; font-size: 14.5px; cursor: pointer; vertical-align: middle; }
+    .green { background-color: #90EE90 !important; font-weight: bold; }
+    .strikethrough { text-decoration: line-through; color: #555; }
+    .room-code { font-size: 28px; font-weight: bold; color: #d32f2f; }
+    button { padding: 12px 20px; margin: 8px; font-size: 16px; border-radius: 8px; }
+    .player-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+    .player { background: white; padding: 8px 16px; border-radius: 20px; border: 2px solid #4caf50; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🐪 The Chameleon</h1>
+    <h2>Kế Hoạch Tương Lai</h2>
+
+    <div id="lobby">
+      <input type="text" id="nickname" placeholder="Nhập tên của bạn" style="padding:12px; font-size:17px; width:220px;">
+      <br><br>
+      <button onclick="createRoom()" style="background:#4caf50; color:white;">Tạo Phòng Mới</button>
+      <br><br>
+      <input type="text" id="roomCode" placeholder="Nhập mã phòng" style="padding:12px; font-size:17px; width:180px;">
+      <button onclick="joinRoom()" style="background:#2196f3; color:white;">Vào Phòng</button>
+    </div>
+
+    <div id="game" style="display:none;">
+      <p>Mã phòng: <span class="room-code" id="displayCode"></span></p>
+      <div class="player-list" id="playerList"></div>
+      
+      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white;">🚀 BẮT ĐẦU GAME</button>
+
+      <div id="roleInfo" style="margin:25px; font-size:22px; font-weight:bold; min-height:40px;"></div>
+
+      <table id="board"></table>
+
+      <div style="margin-top:20px;">
+        <button onclick="endRound()" style="background:#f44336; color:white;">Kết thúc Round</button>
+        <button onclick="leaveRoom()">Rời phòng</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ================== CONFIG FIREBASE (ĐÃ DÁN CỦA BẠN) ==================
+    const firebaseConfig = {
+      apiKey: "AIzaSyD88ovRsmbHyHv5GvRAErcLvNY7Xj3oM3s",
+      authDomain: "chamelon-f0528.firebaseapp.com",
+      databaseURL: "https://chamelon-f0528-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "chamelon-f0528",
+      storageBucket: "chamelon-f0528.firebasestorage.app",
+      messagingSenderId: "94048457317",
+      appId: "1:94048457317:web:7cf04b657e873e4e81ac8c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentRoom = null;
+    let myName = null;
+    let isHost = false;
+
+    const boardWords = [
+      ["Du học nước ngoài", "Lập gia đình", "Mua nhà riêng", "Khởi nghiệp"],
+      ["Thăng tiến sự nghiệp", "Du lịch vòng quanh thế giới", "Sinh con", "Chuyển việc"],
+      ["Tiết kiệm & Đầu tư", "Sống ở nước ngoài", "Học thêm kỹ năng mới", "Viết sách / Xuất bản"],
+      ["Tập gym & Sức khỏe", "Học ngôn ngữ mới", "Nghỉ hưu sớm", "Mở quán cà phê / Nhà hàng"]
+    ];
+
+    function createRoom() {
+      myName = document.getElementById("nickname").value.trim();
+      if (!myName) return alert("Vui lòng nhập tên!");
+      
+      currentRoom = Math.random().toString(36).substring(2, 8).toUpperCase();
+      document.getElementById("lobby").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      document.getElementById("displayCode").textContent = currentRoom;
+      isHost = true;
+      document.getElementById("startBtn").style.display = "inline-block";
+
+      initRoom();
+    }
+
+    function joinRoom() {
+      myName = document.getElementById("nickname").value.trim();
+      const code = document.getElementById("roomCode").value.trim().toUpperCase();
+      if (!myName || !code) return alert("Nhập đủ tên và mã phòng!");
+
+      currentRoom = code;
+      document.getElementById("lobby").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      document.getElementById("displayCode").textContent = currentRoom;
+
+      initRoom();
+    }
+
+    function initRoom() {
+      const roomRef = db.ref("rooms/" + currentRoom);
+      roomRef.child("players/" + myName).set({ name: myName, online: Date.now() });
+
+      roomRef.on("value", (snapshot) => {
+        const data = snapshot.val() || {};
+        updatePlayerList(data.players || {});
+
+        if (data.gameState === "playing" && data.keyword) {
+          const isChameleon = data.chameleon === myName;
+          renderBoard(data.keyword, isChameleon, data.striked || {});
+        }
+      });
+    }
+
+    function updatePlayerList(players) {
+      const list = document.getElementById("playerList");
+      list.innerHTML = "";
+      Object.keys(players).forEach(name => {
+        const div = document.createElement("div");
+        div.className = "player";
+        div.textContent = name + (name === myName ? " (Bạn)" : "");
+        list.appendChild(div);
+      });
+    }
+
+    function startGame() {
+      if (!isHost) return alert("Chỉ host mới được bắt đầu!");
+
+      const roomRef = db.ref("rooms/" + currentRoom);
+      
+      roomRef.once("value").then(snapshot => {
+        const players = Object.keys(snapshot.val()?.players || {});
+        if (players.length < 3) return alert("Cần ít nhất 3 người chơi!");
+
+        const chameleon = players[Math.floor(Math.random() * players.length)];
+        const flatWords = boardWords.flat();
+        const keyword = flatWords[Math.floor(Math.random() * flatWords.length)];
+
+        roomRef.update({
+          gameState: "playing",
+          chameleon: chameleon,
+          keyword: keyword,
+          striked: {}
+        });
+      });
+    }
+
+    function renderBoard(keyword, isChameleon, striked) {
+      const table = document.getElementById("board");
+      table.innerHTML = "";
+
+      let html = "";
+      for (let i = 0; i < 4; i++) {
+        html += "<tr>";
+        for (let j = 0; j < 4; j++) {
+          const word = boardWords[i][j];
+          const isTarget = word === keyword;
+          const isStriked = !!striked[word];
+
+          let className = "";
+          if (!isChameleon && isTarget) className = "green";
+          if (isStriked) className += " strikethrough";
+
+          html += `<td class="${className.trim()}" onclick="toggleStrike('${word.replace(/'/g, "\\'")}')">${word}</td>`;
+        }
+        html += "</tr>";
+      }
+      table.innerHTML = html;
+
+      document.getElementById("roleInfo").innerHTML = isChameleon 
+        ? `<span style="color:red;">Bạn là CHAMELEON!</span><br>Không ai được tô xanh` 
+        : `Keyword: <span style="color:green; font-size:24px;">${keyword}</span>`;
+    }
+
+    function toggleStrike(word) {
+      const roomRef = db.ref("rooms/" + currentRoom + "/striked/" + word);
+      roomRef.transaction(current => !current);
+    }
+
+    function endRound() {
+      if (confirm("Kết thúc round này?")) {
+        alert("Host có thể bấm Bắt đầu lại để chơi round mới.");
+      }
+    }
+
+    function leaveRoom() {
+      if (confirm("Bạn muốn rời phòng?")) {
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
