@@ -1,657 +1,170 @@
-```html id="tt6m8w"
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>The Chameleon</title>
-
-<style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    padding:16px;
-    background:#111827;
-    color:white;
-    font-family:Arial,sans-serif;
-}
-
-.container{
-    max-width:900px;
-    margin:auto;
-}
-
-h1{
-    text-align:center;
-    margin-bottom:20px;
-}
-
-.card{
-    background:#1f2937;
-    padding:18px;
-    border-radius:18px;
-    margin-bottom:16px;
-}
-
-input{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    font-size:16px;
-}
-
-button{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    background:#10b981;
-    color:white;
-    font-size:16px;
-    margin-top:12px;
-    cursor:pointer;
-}
-
-button:hover{
-    opacity:0.9;
-}
-
-.players{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:12px;
-}
-
-.player{
-    background:#374151;
-    padding:8px 14px;
-    border-radius:999px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-}
-
-.cell{
-    background:#374151;
-    border-radius:14px;
-    padding:16px;
-    text-align:center;
-    min-height:90px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    user-select:none;
-    transition:0.2s;
-}
-
-.cell:hover{
-    transform:scale(1.02);
-}
-
-.green{
-    background:#16a34a !important;
-}
-
-.strike{
-    text-decoration:line-through;
-    opacity:0.45;
-}
-
-.role{
-    text-align:center;
-    font-size:28px;
-    font-weight:bold;
-    margin-bottom:16px;
-}
-
-.hidden{
-    display:none;
-}
-
-.small{
-    opacity:0.7;
-    font-size:13px;
-}
-
-.host{
-    background:#f59e0b;
-    color:black;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:13px;
-    font-weight:bold;
-}
-
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-.footer{
-    text-align:center;
-    opacity:0.5;
-    margin-top:20px;
-    font-size:13px;
-}
-
-@media(max-width:700px){
-
-    .grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-
-    .cell{
-        min-height:80px;
-        font-size:14px;
-    }
-
-    .role{
-        font-size:22px;
-    }
-}
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Chameleon - Kế Hoạch Tương Lai</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f8f0; margin: 0; padding: 10px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    table { margin: 20px auto; border-collapse: collapse; }
+    td { width: 180px; height: 85px; border: 2px solid #333; padding: 8px; font-size: 14.5px; cursor: pointer; vertical-align: middle; }
+    .green { background-color: #90EE90 !important; font-weight: bold; }
+    .strikethrough { text-decoration: line-through; color: #555; }
+    .room-code { font-size: 28px; font-weight: bold; color: #d32f2f; }
+    button { padding: 12px 20px; margin: 8px; font-size: 16px; border-radius: 8px; }
+    .player-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+    .player { background: white; padding: 8px 16px; border-radius: 20px; border: 2px solid #4caf50; }
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <h1>🐪 The Chameleon</h1>
+    <h2>Kế Hoạch Tương Lai</h2>
 
-<div class="container">
-
-<h1>🦎 The Chameleon</h1>
-
-<div id="loginCard" class="card">
-
-    <h2>Join Game</h2>
-
-    <input
-        id="nameInput"
-        placeholder="Enter your name"
-    >
-
-    <button onclick="joinGame()">
-        Join Room
-    </button>
-
-</div>
-
-<div id="gameUI" class="hidden">
-
-    <div class="card">
-
-        <div class="topbar">
-
-            <div>
-                Room:
-                <b id="roomCode"></b>
-            </div>
-
-            <div
-                id="hostBadge"
-                class="host hidden"
-            >
-                HOST
-            </div>
-
-        </div>
-
-        <div class="small">
-            Share this URL with friends
-        </div>
-
+    <div id="lobby">
+      <input type="text" id="nickname" placeholder="Nhập tên của bạn" style="padding:12px; font-size:17px; width:220px;">
+      <br><br>
+      <button onclick="createRoom()" style="background:#4caf50; color:white;">Tạo Phòng Mới</button>
+      <br><br>
+      <input type="text" id="roomCode" placeholder="Nhập mã phòng" style="padding:12px; font-size:17px; width:180px;">
+      <button onclick="joinRoom()" style="background:#2196f3; color:white;">Vào Phòng</button>
     </div>
 
-    <div class="card">
-
-        <h2>Players</h2>
-
-        <div
-            id="players"
-            class="players"
-        ></div>
-
-        <button
-            id="startBtn"
-            onclick="startGame()"
-        >
-            Start Game
-        </button>
-
-        <button onclick="resetGame()">
-            Reset Game
-        </button>
-
+    <div id="game" style="display:none;">
+      <p>Mã phòng: <span class="room-code" id="displayCode"></span></p>
+      <div class="player-list" id="playerList"></div>
+      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white;">🚀 BẮT ĐẦU GAME</button>
+      <div id="roleInfo" style="margin:25px; font-size:22px; font-weight:bold;"></div>
+      <table id="board"></table>
+      <div style="margin-top:20px;">
+        <button onclick="endRound()" style="background:#f44336; color:white;">Kết thúc Round</button>
+        <button onclick="leaveRoom()">Rời phòng</button>
+      </div>
     </div>
+  </div>
 
-    <div class="card">
+  <script>
+    // ================== FIREBASE CONFIG MỚI ==================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMM3os1jRLbzF9KUNkene328XgSmr8pKg",
+      authDomain: "chamm-f7898.firebaseapp.com",
+      projectId: "chamm-f7898",
+      storageBucket: "chamm-f7898.firebasestorage.app",
+      messagingSenderId: "936197801014",
+      appId: "1:936197801014:web:a011ce668aadfd43734497"
+    };
 
-        <div
-            id="roleText"
-            class="role"
-        >
-            Waiting for game...
-        </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        <h2>
-            Bảng Kế Hoạch Tương Lai
-        </h2>
-
-        <div
-            id="grid"
-            class="grid"
-        ></div>
-
-    </div>
-
-</div>
-
-<div class="footer">
-Realtime multiplayer with Firebase
-</div>
-
-</div>
-
-<script type="module">
-
-import {
-    initializeApp
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-    getDatabase,
-    ref,
-    update,
-    onValue,
-    get
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-
-  apiKey: "AIzaSyBMM3os1jRLbzF9KUNkene328XgSmr8pKg",
-
-  authDomain: "chamm-f7898.firebaseapp.com",
-
-  databaseURL:
-  "PASTE_YOUR_DATABASE_URL_HERE",
-
-  projectId: "chamm-f7898",
-
-  storageBucket:
-  "chamm-f7898.firebasestorage.app",
-
-  messagingSenderId:
-  "936197801014",
-
-  appId:
-  "1:936197801014:web:a011ce668aadfd43734497",
-
-  measurementId:
-  "G-TW57FJC4NZ"
-};
-
-const app =
-    initializeApp(firebaseConfig);
-
-const db =
-    getDatabase(app);
-
-const keywords = [
-
-"Du học nước ngoài",
-"Lập gia đình",
-"Mua nhà riêng",
-"Khởi nghiệp",
-
-"Thăng tiến sự nghiệp",
-"Du lịch vòng quanh thế giới",
-"Sinh con",
-"Chuyển việc",
-
-"Tiết kiệm & Đầu tư",
-"Sống ở nước ngoài",
-"Học thêm kỹ năng mới",
-"Viết sách / Xuất bản",
-
-"Tập gym & Sức khỏe",
-"Học ngôn ngữ mới",
-"Nghỉ hưu sớm",
-"Mở quán cà phê / Nhà hàng"
-
-];
-
-const params =
-    new URLSearchParams(location.search);
-
-let room = params.get("room");
-
-if(!room){
-
-    room = Math.random()
-        .toString(36)
-        .substring(2,8);
-
-    location.href =
-        location.pathname +
-        "?room=" +
-        room;
-}
-
-document.getElementById("roomCode")
-.innerText = room;
-
-const roomRef =
-    ref(db, "rooms/" + room);
-
-let playerId =
-    localStorage.getItem("playerId");
-
-if(!playerId){
-
-    playerId = crypto.randomUUID();
-
-    localStorage.setItem(
-        "playerId",
-        playerId
-    );
-}
-
-let playerName =
-    localStorage.getItem("playerName")
-    || "";
-
-if(playerName){
-
-    document.getElementById(
-        "nameInput"
-    ).value = playerName;
-}
-
-async function joinGame(){
-
-    const name =
-        document.getElementById(
-            "nameInput"
-        ).value.trim();
-
-    if(!name){
-
-        alert("Enter your name");
-
-        return;
-    }
-
-    playerName = name;
-
-    localStorage.setItem(
-        "playerName",
-        name
-    );
-
-    const snapshot =
-        await get(roomRef);
-
-    const data = snapshot.val();
-
+    let currentRoom = null;
+    let myName = null;
     let isHost = false;
 
-    if(!data || !data.host){
+    const boardWords = [
+      ["Du học nước ngoài", "Lập gia đình", "Mua nhà riêng", "Khởi nghiệp"],
+      ["Thăng tiến sự nghiệp", "Du lịch vòng quanh thế giới", "Sinh con", "Chuyển việc"],
+      ["Tiết kiệm & Đầu tư", "Sống ở nước ngoài", "Học thêm kỹ năng mới", "Viết sách / Xuất bản"],
+      ["Tập gym & Sức khỏe", "Học ngôn ngữ mới", "Nghỉ hưu sớm", "Mở quán cà phê / Nhà hàng"]
+    ];
 
-        isHost = true;
+    function createRoom() {
+      myName = document.getElementById("nickname").value.trim();
+      if (!myName) return alert("Vui lòng nhập tên!");
+      currentRoom = Math.random().toString(36).substring(2, 8).toUpperCase();
+      enterGame();
+      isHost = true;
+      document.getElementById("startBtn").style.display = "inline-block";
+      initRoom();
     }
 
-    await update(roomRef,{
-
-        ["players/" + playerId]: {
-            name
-        },
-
-        ...(isHost && {
-            host: playerId
-        })
-    });
-
-    document.getElementById(
-        "loginCard"
-    ).classList.add("hidden");
-
-    document.getElementById(
-        "gameUI"
-    ).classList.remove("hidden");
-}
-
-window.joinGame = joinGame;
-
-async function startGame(){
-
-    const snapshot =
-        await get(roomRef);
-
-    const data =
-        snapshot.val();
-
-    if(!data?.players){
-
-        return;
+    function joinRoom() {
+      myName = document.getElementById("nickname").value.trim();
+      const code = document.getElementById("roomCode").value.trim().toUpperCase();
+      if (!myName || !code) return alert("Nhập đủ tên và mã phòng!");
+      currentRoom = code;
+      enterGame();
+      initRoom();
     }
 
-    const ids =
-        Object.keys(data.players);
-
-    if(ids.length < 3){
-
-        alert(
-            "Need at least 3 players"
-        );
-
-        return;
+    function enterGame() {
+      document.getElementById("lobby").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      document.getElementById("displayCode").textContent = currentRoom;
     }
 
-    const chosenPlayer =
-        ids[Math.floor(
-            Math.random() * ids.length
-        )];
+    function initRoom() {
+      const roomRef = db.ref("rooms/" + currentRoom);
+      roomRef.child("players/" + myName).set({ name: myName, online: Date.now() });
 
-    const chosenKeyword =
-        keywords[Math.floor(
-            Math.random() * keywords.length
-        )];
-
-    const roles = {};
-
-    ids.forEach(id => {
-
-        roles[id] =
-            id === chosenPlayer
-            ? "chameleon"
-            : "normal";
-    });
-
-    await update(roomRef,{
-
-        started:true,
-
-        keyword:chosenKeyword,
-
-        chameleon:chosenPlayer,
-
-        roles:roles,
-
-        striked:{}
-    });
-}
-
-window.startGame = startGame;
-
-async function resetGame(){
-
-    await update(roomRef,{
-
-        started:false,
-
-        keyword:null,
-
-        chameleon:null,
-
-        roles:null,
-
-        striked:{}
-    });
-}
-
-window.resetGame = resetGame;
-
-function renderGrid(data){
-
-    const grid =
-        document.getElementById("grid");
-
-    grid.innerHTML = "";
-
-    keywords.forEach(word => {
-
-        const div =
-            document.createElement("div");
-
-        div.className = "cell";
-
-        div.innerText = word;
-
-        if(
-            data.started &&
-            data.keyword === word &&
-            data.roles?.[playerId]
-            !== "chameleon"
-        ){
-
-            div.classList.add("green");
+      roomRef.on("value", (snapshot) => {
+        const data = snapshot.val() || {};
+        updatePlayerList(data.players || {});
+        if (data.gameState === "playing" && data.keyword) {
+          renderBoard(data.keyword, data.chameleon === myName, data.striked || {});
         }
+      });
+    }
 
-        if(data.striked?.[word]){
+    function updatePlayerList(players) {
+      const list = document.getElementById("playerList");
+      list.innerHTML = "";
+      Object.keys(players).forEach(name => {
+        const div = document.createElement("div");
+        div.className = "player";
+        div.textContent = name + (name === myName ? " (Bạn)" : "");
+        list.appendChild(div);
+      });
+    }
 
-            div.classList.add("strike");
+    function startGame() {
+      if (!isHost) return alert("Chỉ người tạo phòng mới được bắt đầu!");
+      const roomRef = db.ref("rooms/" + currentRoom);
+      roomRef.once("value").then(s => {
+        const players = Object.keys(s.val()?.players || {});
+        if (players.length < 3) return alert("Cần ít nhất 3 người chơi để bắt đầu!");
+        const chameleon = players[Math.floor(Math.random()*players.length)];
+        const keyword = boardWords.flat()[Math.floor(Math.random()*16)];
+        roomRef.update({ gameState: "playing", chameleon, keyword, striked: {} });
+      });
+    }
+
+    function renderBoard(keyword, isChameleon, striked) {
+      const table = document.getElementById("board");
+      table.innerHTML = "";
+      let html = "";
+      for (let row of boardWords) {
+        html += "<tr>";
+        for (let word of row) {
+          const isTarget = word === keyword;
+          const isStriked = !!striked[word];
+          let cls = "";
+          if (!isChameleon && isTarget) cls = "green";
+          if (isStriked) cls += " strikethrough";
+          html += `<td class="${cls}" onclick="toggleStrike('${word}')">${word}</td>`;
         }
+        html += "</tr>";
+      }
+      table.innerHTML = html;
 
-        div.onclick = async () => {
-
-            const current =
-                data.striked?.[word];
-
-            await update(roomRef,{
-
-                ["striked/" + word]:
-                    !current
-            });
-        };
-
-        grid.appendChild(div);
-    });
-}
-
-onValue(roomRef, snapshot => {
-
-    const data =
-        snapshot.val() || {};
-
-    const playersDiv =
-        document.getElementById("players");
-
-    playersDiv.innerHTML = "";
-
-    if(data.players){
-
-        Object.entries(data.players)
-        .forEach(([id, player]) => {
-
-            const div =
-                document.createElement("div");
-
-            div.className = "player";
-
-            div.innerText =
-                player.name;
-
-            if(id === data.host){
-
-                div.innerText += " 👑";
-            }
-
-            playersDiv.appendChild(div);
-        });
+      document.getElementById("roleInfo").innerHTML = isChameleon 
+        ? `<span style="color:red;">Bạn là CHAMELEON!</span>` 
+        : `Keyword: <span style="color:green; font-size:24px;">${keyword}</span>`;
     }
 
-    const isHost =
-        data.host === playerId;
-
-    const hostBadge =
-        document.getElementById(
-            "hostBadge"
-        );
-
-    if(isHost){
-
-        hostBadge.classList
-        .remove("hidden");
-
-    }else{
-
-        hostBadge.classList
-        .add("hidden");
+    function toggleStrike(word) {
+      db.ref("rooms/" + currentRoom + "/striked/" + word).transaction(v => !v);
     }
 
-    document.getElementById(
-        "startBtn"
-    ).style.display =
-        isHost
-        ? "block"
-        : "none";
-
-    const roleText =
-        document.getElementById(
-            "roleText"
-        );
-
-    if(!data.started){
-
-        roleText.innerHTML =
-            "Waiting for game...";
-
-    }else{
-
-        if(
-            data.roles?.[playerId]
-            === "chameleon"
-        ){
-
-            roleText.innerHTML =
-                "🦎 YOU ARE THE CHAMELEON";
-
-        }else{
-
-            roleText.innerHTML =
-                "🟢 Keyword revealed";
-        }
+    function endRound() { 
+      alert("Round kết thúc! Host bấm nút 'BẮT ĐẦU GAME' để chơi round mới."); 
     }
-
-    renderGrid(data);
-});
-
-</script>
-
+    function leaveRoom() { 
+      if(confirm("Rời phòng?")) location.reload(); 
+    }
+  </script>
 </body>
 </html>
-```
