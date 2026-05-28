@@ -54,6 +54,7 @@
     const firebaseConfig = {
       apiKey: "AIzaSyBMM3os1jRLbzF9KUNkene328XgSmr8pKg",
       authDomain: "chamm-f7898.firebaseapp.com",
+      databaseURL: "https://chamm-f7898-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "chamm-f7898",
       storageBucket: "chamm-f7898.firebasestorage.app",
       messagingSenderId: "936197801014",
@@ -77,7 +78,6 @@
     function createRoom() {
       myName = document.getElementById("nickname").value.trim();
       if (!myName) return alert("Vui lòng nhập tên!");
-      
       currentRoom = Math.random().toString(36).substring(2, 8).toUpperCase();
       isHost = true;
       enterGame();
@@ -88,7 +88,6 @@
       myName = document.getElementById("nickname").value.trim();
       const code = document.getElementById("roomCode").value.trim().toUpperCase();
       if (!myName || !code) return alert("Nhập đủ tên và mã phòng!");
-      
       currentRoom = code;
       enterGame();
       initRoom();
@@ -102,22 +101,13 @@
     }
 
     function initRoom() {
-      console.log("Đang kết nối phòng:", currentRoom);
       const roomRef = db.ref("rooms/" + currentRoom);
-      
-      roomRef.child("players/" + myName).set({ 
-        name: myName, 
-        online: Date.now() 
-      });
+      roomRef.child("players/" + myName).set({ name: myName, online: Date.now() });
 
       roomRef.on("value", (snapshot) => {
         const data = snapshot.val() || {};
-        console.log("Dữ liệu phòng:", data);
-        
         updatePlayerList(data.players || {});
-        
         if (data.gameState === "playing" && data.keyword) {
-          console.log("Game đang chạy, keyword:", data.keyword);
           renderBoard(data.keyword, data.chameleon === myName, data.striked || {});
         }
       });
@@ -137,22 +127,13 @@
     function startGame() {
       if (!isHost) return alert("Chỉ người tạo phòng mới được bắt đầu!");
       
-      console.log("Bắt đầu game...");
       const roomRef = db.ref("rooms/" + currentRoom);
-      
       roomRef.once("value").then(snapshot => {
-        const data = snapshot.val() || {};
-        const players = Object.keys(data.players || {});
-        
-        console.log("Số người chơi:", players.length, players);
-        
+        const players = Object.keys(snapshot.val()?.players || {});
         if (players.length < 3) return alert("Cần ít nhất 3 người chơi!");
 
         const chameleon = players[Math.floor(Math.random() * players.length)];
-        const flatWords = boardWords.flat();
-        const keyword = flatWords[Math.floor(Math.random() * flatWords.length)];
-
-        console.log("Chameleon:", chameleon, "| Keyword:", keyword);
+        const keyword = boardWords.flat()[Math.floor(Math.random() * 16)];
 
         roomRef.update({
           gameState: "playing",
@@ -160,14 +141,10 @@
           keyword: keyword,
           striked: {}
         });
-      }).catch(err => {
-        console.error("Lỗi startGame:", err);
-        alert("Lỗi: " + err.message);
       });
     }
 
     function renderBoard(keyword, isChameleon, striked) {
-      console.log("Render bảng, isChameleon =", isChameleon, "keyword =", keyword);
       const table = document.getElementById("board");
       table.innerHTML = "";
       let html = "";
@@ -194,12 +171,8 @@
       db.ref("rooms/" + currentRoom + "/striked/" + word).transaction(v => !v);
     }
 
-    function endRound() { 
-      alert("Round kết thúc! Host bấm nút BẮT ĐẦU GAME để chơi round mới."); 
-    }
-    function leaveRoom() { 
-      if(confirm("Rời phòng?")) location.reload(); 
-    }
+    function endRound() { alert("Round kết thúc! Host bấm BẮT ĐẦU GAME để chơi tiếp."); }
+    function leaveRoom() { if(confirm("Rời phòng?")) location.reload(); }
   </script>
 </body>
 </html>
