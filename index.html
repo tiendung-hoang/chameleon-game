@@ -16,23 +16,16 @@
       color: #333;
     }
     .container {
-      max-width: 950px;
+      max-width: 1000px;
       margin: 0 auto;
       background: white;
       border-radius: 20px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.2);
       overflow: hidden;
     }
-    h1 {
-      margin: 20px 0 5px;
-      font-size: 2.8em;
-      color: #333;
-    }
-    .subtitle {
-      font-size: 1.4em;
-      color: #555;
-      margin-bottom: 15px;
-    }
+    h1 { margin: 20px 0 5px; font-size: 2.8em; color: #333; }
+    .subtitle { font-size: 1.4em; color: #555; margin-bottom: 15px; }
+    
     table {
       margin: 25px auto;
       border-collapse: collapse;
@@ -42,18 +35,22 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     td {
-      width: 185px;
-      height: 92px;
+      width: 190px;
+      height: 110px;
       border: 2px solid #ddd;
-      padding: 12px;
-      font-size: 15px;
+      padding: 10px;
       cursor: pointer;
       transition: all 0.2s;
       vertical-align: middle;
+      font-size: 15px;
     }
     td:hover { background: #f0f0f0; transform: scale(1.03); }
     .green { background-color: #90EE90 !important; font-weight: bold; }
     .strikethrough { text-decoration: line-through; color: #666; }
+
+    .word-vn { font-weight: bold; font-size: 15.5px; line-height: 1.3; }
+    .word-cn { font-size: 13.5px; color: #555; line-height: 1.2; }
+
     .room-code { font-size: 32px; font-weight: bold; color: #e91e63; }
     button {
       padding: 14px 28px;
@@ -130,17 +127,23 @@
     let isHost = false;
 
     const boardWords = [
-      ["Du học nước ngoài", "留学国外", "Lập gia đình", "结婚"],
-      ["Mua nhà riêng", "买房", "Khởi nghiệp", "创业"],
-      ["Thăng tiến sự nghiệp", "升职", "Du lịch vòng quanh thế giới", "环球旅行"],
-      ["Sinh con", "生孩子", "Chuyển việc", "跳槽"],
-      ["Tiết kiệm & Đầu tư", "理财投资", "Sống ở nước ngoài", "在国外生活"],
-      ["Học thêm kỹ năng mới", "学习新技能", "Viết sách / Xuất bản", "写书出版"],
-      ["Tập gym & Sức khỏe", "健身", "Học ngôn ngữ mới", "学新语言"],
-      ["Nghỉ hưu sớm", "早退休", "Mở quán cà phê", "开咖啡店"]
+      ["Du học nước ngoài", "留学国外"],
+      ["Lập gia đình", "结婚"],
+      ["Mua nhà riêng", "买房"],
+      ["Khởi nghiệp", "创业"],
+      ["Thăng tiến sự nghiệp", "升职"],
+      ["Du lịch vòng quanh thế giới", "环球旅行"],
+      ["Sinh con", "生孩子"],
+      ["Chuyển việc", "跳槽"],
+      ["Tiết kiệm & Đầu tư", "理财投资"],
+      ["Sống ở nước ngoài", "在国外生活"],
+      ["Học thêm kỹ năng mới", "学习新技能"],
+      ["Viết sách / Xuất bản", "写书出版"],
+      ["Tập gym & Sức khỏe", "健身"],
+      ["Học ngôn ngữ mới", "学新语言"],
+      ["Nghỉ hưu sớm", "早退休"],
+      ["Mở quán cà phê / Nhà hàng", "开咖啡店"]
     ];
-
-    // ... (phần còn lại của script giữ nguyên như bản trước, mình rút gọn để tiết kiệm chỗ)
 
     function createRoom() {
       myName = document.getElementById("nickname").value.trim();
@@ -166,8 +169,6 @@
       document.getElementById("displayCode").textContent = currentRoom;
       if (isHost) document.getElementById("startBtn").style.display = "inline-block";
     }
-
-    // Các hàm còn lại giữ giống bản trước (initRoom, startGame, renderBoard, toggleStrike...)
 
     function initRoom() {
       const roomRef = db.ref("rooms/" + currentRoom);
@@ -201,9 +202,8 @@
         if (players.length < 3) return alert("Cần ít nhất 3 người chơi!");
 
         const chameleon = players[Math.floor(Math.random() * players.length)];
-        const flatWords = boardWords.flat();
-        const keywordIndex = Math.floor(Math.random() * flatWords.length / 2) * 2;
-        const keyword = flatWords[keywordIndex]; // Lấy từ tiếng Việt
+        const flatWords = boardWords.map(pair => pair[0]); // Lấy tiếng Việt
+        const keyword = flatWords[Math.floor(Math.random() * flatWords.length)];
 
         roomRef.update({
           gameState: "playing",
@@ -217,25 +217,27 @@
     function renderBoard(keyword, isChameleon, striked) {
       const table = document.getElementById("board");
       table.innerHTML = "";
-      let html = "";
-      for (let i = 0; i < boardWords.length; i += 2) {
-        html += "<tr>";
-        for (let j = 0; j < 4; j++) {
-          const wordVN = boardWords[i][j];
-          const wordCN = boardWords[i+1][j];
-          const isTarget = wordVN === keyword;
-          const isStriked = !!striked[wordVN];
-          let cls = "";
-          if (!isChameleon && isTarget) cls = "green";
-          if (isStriked) cls += " strikethrough";
+      let html = "<tr>";
+      let count = 0;
 
-          html += `<td class="${cls}" onclick="toggleStrike('${wordVN}')">
-            <div>${wordVN}</div>
-            <div style="font-size:13px; color:#666;">${wordCN}</div>
-          </td>`;
-        }
-        html += "</tr>";
+      for (let pair of boardWords) {
+        const vn = pair[0];
+        const cn = pair[1];
+        const isTarget = vn === keyword;
+        const isStriked = !!striked[vn];
+        let cls = "";
+        if (!isChameleon && isTarget) cls = "green";
+        if (isStriked) cls += " strikethrough";
+
+        html += `<td class="${cls}" onclick="toggleStrike('${vn}')">
+          <div class="word-vn">${vn}</div>
+          <div class="word-cn">${cn}</div>
+        </td>`;
+
+        count++;
+        if (count % 4 === 0) html += "</tr><tr>";
       }
+      html += "</tr>";
       table.innerHTML = html;
 
       document.getElementById("roleInfo").innerHTML = isChameleon 
