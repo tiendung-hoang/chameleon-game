@@ -3,49 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Chameleon - Kế Hoạch Tương Lai</title>
+  <title>Kẻ Trinh Thám - 谁是卧底</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f0f8f0; margin: 0; padding: 10px; }
-    .container { max-width: 900px; margin: 0 auto; }
-    table { margin: 20px auto; border-collapse: collapse; background: white; }
-    td { width: 180px; height: 85px; border: 2px solid #333; padding: 10px; font-size: 14.5px; cursor: pointer; vertical-align: middle; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      padding: 10px;
+      color: #333;
+    }
+    .container {
+      max-width: 950px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    h1 {
+      margin: 20px 0 5px;
+      font-size: 2.8em;
+      color: #333;
+    }
+    .subtitle {
+      font-size: 1.4em;
+      color: #555;
+      margin-bottom: 15px;
+    }
+    table {
+      margin: 25px auto;
+      border-collapse: collapse;
+      background: #f8f9fa;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    td {
+      width: 185px;
+      height: 92px;
+      border: 2px solid #ddd;
+      padding: 12px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      vertical-align: middle;
+    }
+    td:hover { background: #f0f0f0; transform: scale(1.03); }
     .green { background-color: #90EE90 !important; font-weight: bold; }
-    .strikethrough { text-decoration: line-through; color: #555; }
-    .room-code { font-size: 28px; font-weight: bold; color: #d32f2f; }
-    button { padding: 12px 24px; margin: 8px; font-size: 16px; border-radius: 8px; cursor: pointer; }
-    .player-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-    .player { background: white; padding: 8px 16px; border-radius: 20px; border: 2px solid #4caf50; }
+    .strikethrough { text-decoration: line-through; color: #666; }
+    .room-code { font-size: 32px; font-weight: bold; color: #e91e63; }
+    button {
+      padding: 14px 28px;
+      margin: 10px;
+      font-size: 17px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+    }
+    .player-list {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .player {
+      background: #e3f2fd;
+      padding: 10px 18px;
+      border-radius: 25px;
+      border: 2px solid #2196f3;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🐪 The Chameleon</h1>
-    <h2>Kế Hoạch Tương Lai</h2>
+    <h1>🕵️ Kẻ Trinh Thám</h1>
+    <p class="subtitle">谁是卧底 / Who is the Chameleon</p>
 
     <div id="lobby">
-      <input type="text" id="nickname" placeholder="Nhập tên của bạn" style="padding:12px; font-size:17px; width:220px;">
+      <input type="text" id="nickname" placeholder="Nhập tên / 输入名字" style="padding:14px; font-size:18px; width:260px;">
       <br><br>
-      <button onclick="createRoom()" style="background:#4caf50; color:white;">Tạo Phòng Mới</button>
+      <button onclick="createRoom()" style="background:#4caf50; color:white;">Tạo Phòng Mới / 创建房间</button>
       <br><br>
-      <input type="text" id="roomCode" placeholder="Nhập mã phòng" style="padding:12px; font-size:17px; width:180px;">
-      <button onclick="joinRoom()" style="background:#2196f3; color:white;">Vào Phòng</button>
+      <input type="text" id="roomCode" placeholder="Nhập mã phòng / 输入房间码" style="padding:14px; font-size:18px; width:220px;">
+      <button onclick="joinRoom()" style="background:#2196f3; color:white;">Vào Phòng / 加入</button>
     </div>
 
-    <div id="game" style="display:none;">
+    <div id="game" style="display:none; padding:20px;">
       <p>Mã phòng: <span class="room-code" id="displayCode"></span></p>
       <div class="player-list" id="playerList"></div>
       
-      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white; font-size:18px; padding:15px 30px;">🚀 BẮT ĐẦU GAME</button>
+      <button onclick="startGame()" id="startBtn" style="display:none; background:#ff9800; color:white; font-size:19px; padding:16px 40px;">🚀 BẮT ĐẦU GAME / 开始游戏</button>
 
-      <div id="roleInfo" style="margin:25px; font-size:22px; font-weight:bold; min-height:70px;"></div>
+      <div id="roleInfo" style="margin:30px; font-size:24px; font-weight:bold; min-height:80px;"></div>
       
       <table id="board"></table>
 
-      <div style="margin-top:20px;">
-        <button onclick="endRound()" style="background:#f44336; color:white;">Kết thúc Round</button>
-        <button onclick="leaveRoom()">Rời phòng</button>
+      <div style="margin-top:25px;">
+        <button onclick="endRound()" style="background:#f44336; color:white;">Kết thúc Round / 结束本轮</button>
+        <button onclick="leaveRoom()">Rời phòng / 退出房间</button>
       </div>
     </div>
   </div>
@@ -69,11 +130,17 @@
     let isHost = false;
 
     const boardWords = [
-      ["Du học nước ngoài", "Lập gia đình", "Mua nhà riêng", "Khởi nghiệp"],
-      ["Thăng tiến sự nghiệp", "Du lịch vòng quanh thế giới", "Sinh con", "Chuyển việc"],
-      ["Tiết kiệm & Đầu tư", "Sống ở nước ngoài", "Học thêm kỹ năng mới", "Viết sách / Xuất bản"],
-      ["Tập gym & Sức khỏe", "Học ngôn ngữ mới", "Nghỉ hưu sớm", "Mở quán cà phê / Nhà hàng"]
+      ["Du học nước ngoài", "留学国外", "Lập gia đình", "结婚"],
+      ["Mua nhà riêng", "买房", "Khởi nghiệp", "创业"],
+      ["Thăng tiến sự nghiệp", "升职", "Du lịch vòng quanh thế giới", "环球旅行"],
+      ["Sinh con", "生孩子", "Chuyển việc", "跳槽"],
+      ["Tiết kiệm & Đầu tư", "理财投资", "Sống ở nước ngoài", "在国外生活"],
+      ["Học thêm kỹ năng mới", "学习新技能", "Viết sách / Xuất bản", "写书出版"],
+      ["Tập gym & Sức khỏe", "健身", "Học ngôn ngữ mới", "学新语言"],
+      ["Nghỉ hưu sớm", "早退休", "Mở quán cà phê", "开咖啡店"]
     ];
+
+    // ... (phần còn lại của script giữ nguyên như bản trước, mình rút gọn để tiết kiệm chỗ)
 
     function createRoom() {
       myName = document.getElementById("nickname").value.trim();
@@ -99,6 +166,8 @@
       document.getElementById("displayCode").textContent = currentRoom;
       if (isHost) document.getElementById("startBtn").style.display = "inline-block";
     }
+
+    // Các hàm còn lại giữ giống bản trước (initRoom, startGame, renderBoard, toggleStrike...)
 
     function initRoom() {
       const roomRef = db.ref("rooms/" + currentRoom);
@@ -126,14 +195,15 @@
 
     function startGame() {
       if (!isHost) return alert("Chỉ người tạo phòng mới được bắt đầu!");
-      
       const roomRef = db.ref("rooms/" + currentRoom);
       roomRef.once("value").then(snapshot => {
         const players = Object.keys(snapshot.val()?.players || {});
         if (players.length < 3) return alert("Cần ít nhất 3 người chơi!");
 
         const chameleon = players[Math.floor(Math.random() * players.length)];
-        const keyword = boardWords.flat()[Math.floor(Math.random() * 16)];
+        const flatWords = boardWords.flat();
+        const keywordIndex = Math.floor(Math.random() * flatWords.length / 2) * 2;
+        const keyword = flatWords[keywordIndex]; // Lấy từ tiếng Việt
 
         roomRef.update({
           gameState: "playing",
@@ -148,23 +218,29 @@
       const table = document.getElementById("board");
       table.innerHTML = "";
       let html = "";
-      for (let row of boardWords) {
+      for (let i = 0; i < boardWords.length; i += 2) {
         html += "<tr>";
-        for (let word of row) {
-          const isTarget = word === keyword;
-          const isStriked = !!striked[word];
+        for (let j = 0; j < 4; j++) {
+          const wordVN = boardWords[i][j];
+          const wordCN = boardWords[i+1][j];
+          const isTarget = wordVN === keyword;
+          const isStriked = !!striked[wordVN];
           let cls = "";
           if (!isChameleon && isTarget) cls = "green";
           if (isStriked) cls += " strikethrough";
-          html += `<td class="${cls}" onclick="toggleStrike('${word}')">${word}</td>`;
+
+          html += `<td class="${cls}" onclick="toggleStrike('${wordVN}')">
+            <div>${wordVN}</div>
+            <div style="font-size:13px; color:#666;">${wordCN}</div>
+          </td>`;
         }
         html += "</tr>";
       }
       table.innerHTML = html;
 
       document.getElementById("roleInfo").innerHTML = isChameleon 
-        ? `<span style="color:red;">Bạn là CHAMELEON!</span>` 
-        : `Keyword: <span style="color:green; font-size:24px;">${keyword}</span>`;
+        ? `<span style="color:red;">Bạn là KẺ GIẢ MẠO!<br>你是卧底！</span>` 
+        : `Từ khóa: <span style="color:green; font-size:26px;">${keyword}</span>`;
     }
 
     function toggleStrike(word) {
